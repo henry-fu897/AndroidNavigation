@@ -51,7 +51,7 @@ fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
 
     NavHost(modifier = modifier, navController = navController, startDestination = "screen1") {
         composable("screen1") {Screen1(navController, viewModel.text, viewModel::onTextChange)}
-        composable("screen2") {Screen2(navController, viewModel.text)}
+        composable("screen2") {Screen2(navController, viewModel<NavViewModel>().text)}
     }
 }
 
@@ -80,7 +80,7 @@ fun Screen2(navController: NavController, text: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column {
             Text(text)
-            Button(onClick = { navController.navigate("screen1") }) {
+            Button(onClick = { navController.popBackStack() }) {
                 Text("Back")
             }
         }
