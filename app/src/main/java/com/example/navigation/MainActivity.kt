@@ -36,8 +36,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             NavigationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Modifier.padding(innerPadding)
-                    AppNavHost()
+
+                    AppNavHost(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -45,11 +45,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavHost(viewModel: NavViewModel = viewModel()) {
+fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
 
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "screen1") {
+    NavHost(modifier = modifier, navController = navController, startDestination = "screen1") {
         composable("screen1") {Screen1(navController, viewModel.text, viewModel::onTextChange)}
         composable("screen2") {Screen2(navController, viewModel.text)}
     }
