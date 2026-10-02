@@ -68,7 +68,7 @@ fun Screen1(navController: NavController,
                 modifier = Modifier.fillMaxWidth()
             )
             Text("Screen 1")
-            Button(onClick = { navController.navigate("screen2") }) {
+            Button(onClick = { navController.navigate("screen_2") }) {
                 Text("Forward")
             }
         }
