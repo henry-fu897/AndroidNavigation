@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 
 class NavViewModel : ViewModel() {
 
-    var text by mutableStateOf("")
+    var text: String = ""
         private set
 
     fun onTextChange (newText: String) {
