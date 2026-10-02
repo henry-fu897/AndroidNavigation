@@ -7,11 +7,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,18 +44,28 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavHost() {
+    var text by remember { mutableStateOf("") }
+
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "screen1") {
-        composable("screen1") {Screen1(navController)}
-        composable("screen2") {Screen2(navController)}
+        composable("screen1") {Screen1(navController, text, {text = it})}
+        composable("screen2") {Screen2(navController, text)}
     }
 }
 
 @Composable
-fun Screen1(navController: NavController) {
+fun Screen1(navController: NavController,
+            text: String,
+            onTextChange: (String) -> Unit) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column {
+            TextField(
+                value = text,
+                onValueChange = onTextChange,
+                label = { Text("Enter some text")},
+                modifier = Modifier.fillMaxWidth()
+            )
             Text("Screen 1")
             Button(onClick = { navController.navigate("screen2") }) {
                 Text("Forward")
@@ -59,10 +75,10 @@ fun Screen1(navController: NavController) {
 }
 
 @Composable
-fun Screen2(navController: NavController) {
+fun Screen2(navController: NavController, text: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column {
-            Text("Screen 2")
+            Text(text)
             Button(onClick = { navController.popBackStack() }) {
                 Text("Back")
             }
