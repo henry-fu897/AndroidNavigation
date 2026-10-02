@@ -80,7 +80,7 @@ fun Screen2(navController: NavController, text: String) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column {
             Text(text)
-            Button(onClick = { navController.popBackStack() }) {
+            Button(onClick = { navController.navigate("screen1") }) {
                 Text("Back")
             }
         }
