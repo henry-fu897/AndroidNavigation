@@ -7,10 +7,13 @@ import androidx.lifecycle.ViewModel
 
 class NavViewModel : ViewModel() {
 
-    var text by mutableStateOf("")
+    val q1Options = listOf("Paris", "Berlin", "Madrid", "Rome")
+    private val q1CorrectIndex = 0
+
+    var q1Answer by mutableStateOf<Int?>(null)
         private set
 
-    fun onTextChange (newText: String) {
-        text = newText
+    fun onSelect(index: Int) {
+        q1Answer = index
     }
 }
