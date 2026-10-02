@@ -51,7 +51,7 @@ fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
 
     NavHost(modifier = modifier, navController = navController, startDestination = "screen1") {
         composable("screen1") {Screen1(navController, viewModel.text, viewModel::onTextChange)}
-        composable("screen2") {Screen2(navController, viewModel<NavViewModel>().text)}
+        composable("screen2") {Screen2(navController, viewModel.text)}
     }
 }
 
