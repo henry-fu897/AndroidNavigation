@@ -1,7 +1,6 @@
 package com.example.navigation
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
@@ -29,7 +27,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -37,26 +34,18 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -153,15 +142,13 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
                 options = viewModel.q2Options,
                 selected = viewModel.q2Answers,
                 onToggle = viewModel::onToggle,
-                onNext = {navController.navigate(Routes.Q3)},
-                onBack = { navController.popBackStack() }
+                onNext = {navController.navigate(Routes.Q3)}
             )
         }
         composable(Routes.Q3) {
             Q3Screen(
                 text = viewModel.q3Answer,
                 onTextChange = viewModel::onChange,
-                onBack = { navController.popBackStack() },
                 onFinish = {
                     // Remove the quiz screens so Back doesn't return to them.
                     navController.navigate(Routes.RESULTS) {
@@ -233,8 +220,7 @@ fun Q1Screen(options: List<String>,
 fun Q2Screen(options: List<String>,
              selected: Set<Int>,
              onToggle: (Int) -> Unit,
-             onNext: () -> Unit,
-             onBack: () -> Unit) {
+             onNext: () -> Unit) {
     QuestionLayout {
         Text(
             "Question 2",
@@ -254,9 +240,6 @@ fun Q2Screen(options: List<String>,
             modifier = Modifier.padding(top = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(onClick = onBack, shape = MaterialTheme.shapes.medium) {
-                Text("Back")
-            }
             Button(
                 onClick = onNext,
                 enabled = selected.isNotEmpty(),
@@ -325,8 +308,7 @@ fun AnswerCard(
 @Composable
 fun Q3Screen(text: String,
              onTextChange: (String) -> Unit,
-             onFinish: () -> Unit,
-             onBack: () -> Unit) {
+             onFinish: () -> Unit) {
     QuestionLayout {
         Text(
             "Question 3",
@@ -345,9 +327,6 @@ fun Q3Screen(text: String,
             modifier = Modifier.padding(top = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(onClick = onBack, shape = MaterialTheme.shapes.medium) {
-                Text("Back")
-            }
             Button(onClick = onFinish, shape = MaterialTheme.shapes.medium) {
                 Text("Finish")
             }
