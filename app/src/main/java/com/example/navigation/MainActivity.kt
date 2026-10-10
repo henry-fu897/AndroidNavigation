@@ -23,13 +23,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -37,6 +41,8 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +59,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.navigation.ui.theme.NavigationTheme
 
@@ -70,21 +77,69 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NavigationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
-                    AppNavHost(modifier = Modifier.padding(innerPadding))
-                }
+                AppNavHost()
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
+fun AppNavHost(viewModel: NavViewModel = viewModel()) {
 
     val navController = rememberNavController()
 
-    NavHost(modifier = modifier, navController = navController, startDestination = Routes.Q1) {
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val route = backStackEntry?.destination?.route
+
+    val title = when (route) {
+        Routes.Q1 -> "Question 1 of 3"
+        Routes.Q2 -> "Question 2 of 3"
+        Routes.Q3 -> "Question 3 of 3"
+        Routes.RESULTS -> "Results"
+        else -> ""
+    }
+    val isQuestion = route == Routes.Q1 || route == Routes.Q2 || route == Routes.Q3
+    val canGoBack = route == Routes.Q2 || route == Routes.Q3
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text(title) },
+                navigationIcon = {
+                    if (canGoBack) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                },
+                actions = {
+                    if (isQuestion) {
+                        IconButton(onClick = {
+                            viewModel.onRestart()
+                            navController.navigate(Routes.Q1) {
+                                popUpTo(Routes.Q1) { inclusive = true }
+                            }
+                        }) {
+                            Icon(Icons.Filled.Refresh, contentDescription = "Restart quiz")
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            )
+        }
+    ) { innerPadding ->
+        NavHost(
+            modifier = Modifier.padding(innerPadding),
+            navController = navController,
+            startDestination = Routes.Q1
+        ) {
         composable(Routes.Q1) {
             Q1Screen(
                 options = viewModel.q1Options,
@@ -126,7 +181,7 @@ fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
                 }
             )
         }
-
+        }
     }
 }
 
