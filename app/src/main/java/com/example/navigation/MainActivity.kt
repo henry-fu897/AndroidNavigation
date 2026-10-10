@@ -7,7 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -116,13 +118,25 @@ fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
 }
 
 @Composable
+fun QuestionLayout(content: @Composable ColumnScope.() -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val inset = maxWidth * 0.1f // 10%
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = inset, end = inset),
+            verticalArrangement = Arrangement.Center,
+            content = content
+        )
+    }
+}
+@Composable
 fun Q1Screen(options: List<String>,
              selected: Int?,
              onSelect: (Int) -> Unit,
              onNext: () -> Unit
         ){
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column {
+    QuestionLayout {
             Text("Question 1", style = MaterialTheme.typography.labelLarge)
             Text("What is the capital of France?", style = MaterialTheme.typography.headlineSmall)
             options.forEachIndexed { index, option ->
@@ -145,7 +159,6 @@ fun Q1Screen(options: List<String>,
                     enabled = selected != null) {
                 Text("Next Question")
             }
-        }
     }
 }
 
@@ -154,8 +167,7 @@ fun Q2Screen(options: List<String>,
              selected: Set<Int>,
              onToggle: (Int) -> Unit,
              onNext: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column {
+    QuestionLayout {
             Text("Question 2", style = MaterialTheme.typography.labelLarge)
             Text("Which of these are mammals?", style = MaterialTheme.typography.headlineSmall)
             options.forEachIndexed { index, option ->
@@ -178,7 +190,6 @@ fun Q2Screen(options: List<String>,
                 enabled = selected.isNotEmpty()) {
                 Text("Next Question")
             }
-        }
     }
 }
 
@@ -186,8 +197,7 @@ fun Q2Screen(options: List<String>,
 fun Q3Screen(text: String,
              onTextChange: (String) -> Unit,
              onFinish: () -> Unit) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column {
+    QuestionLayout {
             Text("Question 3", style = MaterialTheme.typography.labelLarge)
             Text("The capital of Japan is ______.", style = MaterialTheme.typography.headlineSmall)
             OutlinedTextField(
@@ -200,9 +210,7 @@ fun Q3Screen(text: String,
             Button(onClick = onFinish) {
                 Text("Finish")
             }
-        }
     }
-
 }
 
 @Composable
