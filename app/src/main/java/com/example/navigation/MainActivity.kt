@@ -137,28 +137,32 @@ fun Q1Screen(options: List<String>,
              onNext: () -> Unit
         ){
     QuestionLayout {
-            Text("Question 1", style = MaterialTheme.typography.labelLarge)
-            Text("What is the capital of France?", style = MaterialTheme.typography.headlineSmall)
-            options.forEachIndexed { index, option ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = selected == index,
-                            onClick = { onSelect(index) },
-                            role = Role.RadioButton
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(selected = selected == index, onClick = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(option)
-                }
+        Text(
+            "Question 1",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text("What is the capital of France?", style = MaterialTheme.typography.headlineSmall)
+        options.forEachIndexed { index, option ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = selected == index,
+                        onClick = { onSelect(index) },
+                        role = Role.RadioButton
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(selected = selected == index, onClick = null)
+                Spacer(Modifier.width(8.dp))
+                Text(option, style = MaterialTheme.typography.bodyLarge)
             }
-            Button(onClick = onNext,
-                    enabled = selected != null) {
-                Text("Next Question")
-            }
+        }
+        Button(onClick = onNext,
+                enabled = selected != null) {
+            Text("Next Question")
+        }
     }
 }
 
@@ -168,28 +172,32 @@ fun Q2Screen(options: List<String>,
              onToggle: (Int) -> Unit,
              onNext: () -> Unit) {
     QuestionLayout {
-            Text("Question 2", style = MaterialTheme.typography.labelLarge)
-            Text("Which of these are mammals?", style = MaterialTheme.typography.headlineSmall)
-            options.forEachIndexed { index, option ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .toggleable(
-                            value = index in selected,
-                            onValueChange = { onToggle(index) },
-                            role = Role.Checkbox
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(checked = index in selected, onCheckedChange = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(option)
-                }
+        Text(
+            "Question 2",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text("Which of these are mammals?", style = MaterialTheme.typography.headlineSmall)
+        options.forEachIndexed { index, option ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .toggleable(
+                        value = index in selected,
+                        onValueChange = { onToggle(index) },
+                        role = Role.Checkbox
+                    ),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = index in selected, onCheckedChange = null)
+                Spacer(Modifier.width(8.dp))
+                Text(option, style = MaterialTheme.typography.bodyLarge)
             }
-            Button(onClick = onNext,
-                enabled = selected.isNotEmpty()) {
-                Text("Next Question")
-            }
+        }
+        Button(onClick = onNext,
+            enabled = selected.isNotEmpty()) {
+            Text("Next Question")
+        }
     }
 }
 
@@ -198,18 +206,22 @@ fun Q3Screen(text: String,
              onTextChange: (String) -> Unit,
              onFinish: () -> Unit) {
     QuestionLayout {
-            Text("Question 3", style = MaterialTheme.typography.labelLarge)
-            Text("The capital of Japan is ______.", style = MaterialTheme.typography.headlineSmall)
-            OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
-                label = { Text("Your answer") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Button(onClick = onFinish) {
-                Text("Finish")
-            }
+        Text(
+            "Question 3",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text("The capital of Japan is ______.", style = MaterialTheme.typography.headlineSmall)
+        OutlinedTextField(
+            value = text,
+            onValueChange = onTextChange,
+            label = { Text("Your answer") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Button(onClick = onFinish) {
+            Text("Finish")
+        }
     }
 }
 
@@ -257,13 +269,21 @@ fun Results(viewModel: NavViewModel,
 
 @Composable
 fun ResultRow(title: String, correct: Boolean, yourAnswer: String, correctAnswer: String) {
-    val answerColor = if (correct) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
+    val answerColor = if (correct) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
     Column {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
-        Text(text = "Your answer: $yourAnswer", color = answerColor)
+        Text(
+            text = "Your answer: $yourAnswer",
+            style = MaterialTheme.typography.bodyLarge,
+            color = answerColor
+        )
         if (!correct) {
-            Text("Correct answer: $correctAnswer")
+            Text(
+                text = "Correct answer: $correctAnswer",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
