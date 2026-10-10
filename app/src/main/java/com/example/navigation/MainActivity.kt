@@ -159,8 +159,11 @@ fun Q1Screen(options: List<String>,
                 Text(option, style = MaterialTheme.typography.bodyLarge)
             }
         }
-        Button(onClick = onNext,
-                enabled = selected != null) {
+        Button(
+            onClick = onNext,
+            enabled = selected != null,
+            shape = MaterialTheme.shapes.medium
+        ) {
             Text("Next Question")
         }
     }
@@ -194,8 +197,11 @@ fun Q2Screen(options: List<String>,
                 Text(option, style = MaterialTheme.typography.bodyLarge)
             }
         }
-        Button(onClick = onNext,
-            enabled = selected.isNotEmpty()) {
+        Button(
+            onClick = onNext,
+            enabled = selected.isNotEmpty(),
+            shape = MaterialTheme.shapes.medium
+        ) {
             Text("Next Question")
         }
     }
@@ -219,7 +225,10 @@ fun Q3Screen(text: String,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        Button(onClick = onFinish) {
+        Button(
+            onClick = onFinish,
+            shape = MaterialTheme.shapes.medium
+            ) {
             Text("Finish")
         }
     }
@@ -261,7 +270,11 @@ fun Results(viewModel: NavViewModel,
         )
 
         Spacer(Modifier.weight(1f))
-        Button(onClick = onRestart, modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = onRestart,
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium
+        ) {
             Text("Restart")
         }
     }
