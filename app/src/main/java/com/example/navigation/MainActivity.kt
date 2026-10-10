@@ -21,7 +21,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -87,13 +89,15 @@ fun AppNavHost(modifier: Modifier, viewModel: NavViewModel = viewModel()) {
                 options = viewModel.q2Options,
                 selected = viewModel.q2Answers,
                 onToggle = viewModel::onToggle,
-                onNext = {navController.navigate(Routes.Q3)}
+                onNext = {navController.navigate(Routes.Q3)},
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Routes.Q3) {
             Q3Screen(
                 text = viewModel.q3Answer,
                 onTextChange = viewModel::onChange,
+                onBack = { navController.popBackStack() },
                 onFinish = {
                     // Remove the quiz screens so Back doesn't return to them.
                     navController.navigate(Routes.RESULTS) {
@@ -173,7 +177,8 @@ fun Q1Screen(options: List<String>,
 fun Q2Screen(options: List<String>,
              selected: Set<Int>,
              onToggle: (Int) -> Unit,
-             onNext: () -> Unit) {
+             onNext: () -> Unit,
+             onBack: () -> Unit) {
     QuestionLayout {
         Text(
             "Question 2",
@@ -197,12 +202,20 @@ fun Q2Screen(options: List<String>,
                 Text(option, style = MaterialTheme.typography.bodyLarge)
             }
         }
-        Button(
-            onClick = onNext,
-            enabled = selected.isNotEmpty(),
-            shape = MaterialTheme.shapes.medium
+        Row(
+            modifier = Modifier.padding(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text("Next Question")
+            OutlinedButton(onClick = onBack, shape = MaterialTheme.shapes.medium) {
+                Text("Back")
+            }
+            Button(
+                onClick = onNext,
+                enabled = selected.isNotEmpty(),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Next Question")
+            }
         }
     }
 }
@@ -210,7 +223,8 @@ fun Q2Screen(options: List<String>,
 @Composable
 fun Q3Screen(text: String,
              onTextChange: (String) -> Unit,
-             onFinish: () -> Unit) {
+             onFinish: () -> Unit,
+             onBack: () -> Unit) {
     QuestionLayout {
         Text(
             "Question 3",
@@ -225,11 +239,16 @@ fun Q3Screen(text: String,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        Button(
-            onClick = onFinish,
-            shape = MaterialTheme.shapes.medium
-            ) {
-            Text("Finish")
+        Row(
+            modifier = Modifier.padding(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(onClick = onBack, shape = MaterialTheme.shapes.medium) {
+                Text("Back")
+            }
+            Button(onClick = onFinish, shape = MaterialTheme.shapes.medium) {
+                Text("Finish")
+            }
         }
     }
 }
@@ -270,7 +289,7 @@ fun Results(viewModel: NavViewModel,
         )
 
         Spacer(Modifier.weight(1f))
-        Button(
+        FilledTonalButton(
             onClick = onRestart,
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.medium
