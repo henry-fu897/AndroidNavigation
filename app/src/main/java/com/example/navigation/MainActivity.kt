@@ -2,11 +2,13 @@ package com.example.navigation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -41,11 +43,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -78,10 +82,27 @@ object Routes {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // enableEdgeToEdge() // defnd on ComponentActivity; == this.enableEdgeToEdge()
         setContent {
-            NavigationTheme {
-                AppNavHost()
+            val systemDark = isSystemInDarkTheme()
+            var darkTheme by rememberSaveable { mutableStateOf(systemDark) }
+
+            DisposableEffect(darkTheme) {
+                this@MainActivity.enableEdgeToEdge( // use this ref of MainActivity
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkTheme }
+                )
+                onDispose {}
+            }
+
+            NavigationTheme(darkTheme = darkTheme) {
+                AppNavHost(darkTheme = darkTheme, onDarkChange = { darkTheme = it })
             }
         }
     }
@@ -89,7 +110,11 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavHost(viewModel: NavViewModel = viewModel()) {
+fun AppNavHost(
+        darkTheme: Boolean,
+        onDarkChange: (Boolean) -> Unit,
+        viewModel: NavViewModel = viewModel()
+) {
 
     val navController = rememberNavController()
 
@@ -142,6 +167,11 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
                         }
                     },
                     actions = {
+                        Switch(
+                            checked = darkTheme,
+                            onCheckedChange = onDarkChange,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
                         if (isQuestion) {
                             IconButton(onClick = { showRestartDialog = true }) {
                                 Icon(Icons.Filled.Refresh, contentDescription = "Restart quiz")
