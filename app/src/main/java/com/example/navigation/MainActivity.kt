@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,8 +32,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -91,37 +93,57 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
     val isQuestion = route == Routes.Q1 || route == Routes.Q2 || route == Routes.Q3
     val canGoBack = route == Routes.Q2 || route == Routes.Q3
 
+    val progress = when (route) {
+        Routes.Q1 -> 1f / 3
+        Routes.Q2 -> 2f / 3
+        Routes.Q3, Routes.RESULTS -> 1f
+        else -> 0f   // route is briefly null on first composition
+    }
+    val animatedProgress by animateFloatAsState(progress, label = "quiz progress")
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    if (canGoBack) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    }
-                },
-                actions = {
-                    if (isQuestion) {
-                        IconButton(onClick = {
-                            viewModel.onRestart()
-                            navController.navigate(Routes.Q1) {
-                                popUpTo(Routes.Q1) { inclusive = true }
+            Column {
+                TopAppBar(
+                    title = { Text(title) },
+                    navigationIcon = {
+                        if (canGoBack) {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                             }
-                        }) {
-                            Icon(Icons.Filled.Refresh, contentDescription = "Restart quiz")
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    },
+                    actions = {
+                        if (isQuestion) {
+                            IconButton(onClick = {
+                                viewModel.onRestart()
+                                navController.navigate(Routes.Q1) {
+                                    popUpTo(Routes.Q1) { inclusive = true }
+                                }
+                            }) {
+                                Icon(Icons.Filled.Refresh, contentDescription = "Restart quiz")
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 )
-            )
+                LinearProgressIndicator(
+                    progress = { animatedProgress }, // loading...
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primary,
+                    //primarytrackColor = MaterialTheme.colorScheme.error,
+                    trackColor = MaterialTheme.colorScheme.primaryContainer,
+                    strokeCap = StrokeCap.Butt, //
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
