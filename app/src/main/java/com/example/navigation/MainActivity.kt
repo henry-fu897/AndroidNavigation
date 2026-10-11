@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,12 +39,17 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,6 +65,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.navigation.ui.theme.NavigationTheme
+import kotlinx.coroutines.launch
 
 
 object Routes {
@@ -96,6 +103,19 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
         Routes.RESULTS -> "Results"
         else -> ""
     }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope() // !!
+    var showRestartDialog by remember { mutableStateOf(false) }
+
+    fun restartQuiz(popUpFrom: String) {
+        viewModel.onRestart()
+        navController.navigate(Routes.Q1) {
+            popUpTo(popUpFrom) { inclusive = true }
+        }
+        scope.launch { snackbarHostState.showSnackbar("Quiz restarted") } // !!
+    }
+
     val isQuestion = route == Routes.Q1 || route == Routes.Q2 || route == Routes.Q3
     val canGoBack = route == Routes.Q2 || route == Routes.Q3
 
@@ -109,6 +129,7 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column {
                 TopAppBar(
@@ -122,12 +143,7 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
                     },
                     actions = {
                         if (isQuestion) {
-                            IconButton(onClick = {
-                                viewModel.onRestart()
-                                navController.navigate(Routes.Q1) {
-                                    popUpTo(Routes.Q1) { inclusive = true }
-                                }
-                            }) {
+                            IconButton(onClick = { showRestartDialog = true }) {
                                 Icon(Icons.Filled.Refresh, contentDescription = "Restart quiz")
                             }
                         }
@@ -188,15 +204,26 @@ fun AppNavHost(viewModel: NavViewModel = viewModel()) {
         composable(Routes.RESULTS) {
             Results(
                 viewModel = viewModel,
-                onRestart = {
-                    viewModel.onRestart()
-                    navController.navigate(Routes.Q1) {
-                        popUpTo(Routes.RESULTS) { inclusive = true }
-                    }
-                }
+                onRestart = { restartQuiz(Routes.RESULTS) }
             )
         }
         }
+    }
+    if (showRestartDialog) {
+        AlertDialog(
+            onDismissRequest = { showRestartDialog = false },
+            title = { Text("Restart quiz?") },
+            text = { Text("Your answers so far will be cleared.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showRestartDialog = false
+                    restartQuiz(route ?: Routes.Q1)
+                }) { Text("Restart") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRestartDialog = false }) { Text("Cancel") }
+            }
+        )
     }
 }
 
