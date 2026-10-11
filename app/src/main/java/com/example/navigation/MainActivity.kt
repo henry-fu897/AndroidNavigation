@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -41,11 +43,15 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -331,6 +337,9 @@ fun AnswerCard(
 fun Q3Screen(text: String,
              onTextChange: (String) -> Unit,
              onFinish: () -> Unit) {
+    var touched by rememberSaveable { mutableStateOf(false) }
+    val isError = touched && text.isBlank()
+
     QuestionLayout {
         Text(
             "Question 3",
@@ -340,18 +349,29 @@ fun Q3Screen(text: String,
         Text("The capital of Japan is ______.", style = MaterialTheme.typography.headlineSmall)
         OutlinedTextField(
             value = text,
-            onValueChange = onTextChange,
+            onValueChange = {
+                touched = true
+                onTextChange(it)
+            },
             label = { Text("Your answer") },
+            supportingText = {
+                Text(if (isError) "Please enter an answer" else "Type a city name")
+            },
+            isError = isError,
             singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { if (text.isNotBlank()) onFinish() }),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
         )
-        Row(
+        Button(
+            onClick = onFinish,
+            enabled = text.isNotBlank(),
             modifier = Modifier.padding(top = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
-            Button(onClick = onFinish, shape = MaterialTheme.shapes.medium) {
-                Text("Finish")
-            }
+            Text("Finish")
         }
     }
 }
