@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
@@ -28,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -69,6 +71,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.navigation.ui.theme.NavigationTheme
+import com.example.navigation.ui.theme.semanticColors
 import kotlinx.coroutines.launch
 
 
@@ -481,15 +484,28 @@ fun Results(viewModel: NavViewModel,
 
 @Composable
 fun ResultRow(title: String, correct: Boolean, yourAnswer: String, correctAnswer: String) {
-    val answerColor = if (correct) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+    val answerColor = if (correct) {
+        MaterialTheme.semanticColors.correct
+    } else {
+        MaterialTheme.colorScheme.error
+    }
 
     Column {
         Text(text = title, style = MaterialTheme.typography.titleMedium)
-        Text(
-            text = "Your answer: $yourAnswer",
-            style = MaterialTheme.typography.bodyLarge,
-            color = answerColor
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = if (correct) Icons.Filled.Check else Icons.Filled.Close,
+                contentDescription = if (correct) "Correct" else "Incorrect",
+                tint = answerColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(6.dp))
+            Text(
+                text = "Your answer: $yourAnswer",
+                style = MaterialTheme.typography.bodyLarge,
+                color = answerColor
+            )
+        }
         if (!correct) {
             Text(
                 text = "Correct answer: $correctAnswer",
