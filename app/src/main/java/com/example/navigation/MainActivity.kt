@@ -183,11 +183,6 @@ fun AppNavHost(
                         }
                     },
                     actions = {
-                        Switch(
-                            checked = darkTheme,
-                            onCheckedChange = onDarkChange,
-                            modifier = Modifier.padding(end = 4.dp)
-                        )
                         if (isQuestion) {
                             IconButton(onClick = { showRestartDialog = true }) {
                                 Icon(Icons.Filled.Refresh, contentDescription = "Restart quiz")
@@ -281,9 +276,12 @@ fun AppNavHost(
                     onRestart = { restartQuiz(Routes.RESULTS) }
                 )
             }
-            composable(Routes.SETTINGS) {
-                SettingsScreen()
-            }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                darkTheme = darkTheme,
+                onDarkChange = onDarkChange
+            )
+        }
         }
     }
     if (showRestartDialog) {
@@ -305,9 +303,50 @@ fun AppNavHost(
 }
 
 @Composable
-fun SettingsScreen() {
-    // The Settings tab is empty for now: its content comes later.
-    Box(Modifier.fillMaxSize())
+fun SettingsScreen(
+        darkTheme: Boolean,
+        onDarkChange: (Boolean) -> Unit
+) {
+    // The Settings tab is still mostly empty
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Dark mode",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Switch(checked = darkTheme, onCheckedChange = onDarkChange)
+        }
+        Text(
+            "Follows your system light/dark setting.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Setting Test Spacing",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+    ) {
+
+    }
 }
 
 @Composable
