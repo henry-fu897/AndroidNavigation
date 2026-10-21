@@ -47,6 +47,7 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -56,6 +57,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,8 +70,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -101,6 +105,9 @@ class MainActivity : ComponentActivity() {
             }
             val darkTheme = darkThemeOverride ?: systemDark
 
+            var fontScale by rememberSaveable { mutableStateOf(1f) }
+            val baseDensity = LocalDensity.current
+
             DisposableEffect(darkTheme) {
                 this@MainActivity.enableEdgeToEdge( // use this ref of MainActivity
                     statusBarStyle = SystemBarStyle.auto(
@@ -115,8 +122,21 @@ class MainActivity : ComponentActivity() {
                 onDispose {}
             }
 
-            NavigationTheme(darkTheme = darkTheme) {
-                AppNavHost(darkTheme = darkTheme, onDarkChange = { darkThemeOverride = it })
+            // Only the font scale changes: sp text grows, dp layout stays put.
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    density = baseDensity.density,
+                    fontScale = baseDensity.fontScale * fontScale
+                )
+            ) {
+                NavigationTheme(darkTheme = darkTheme) {
+                    AppNavHost(
+                        darkTheme = darkTheme,
+                        onDarkChange = { darkThemeOverride = it },
+                        fontScale = fontScale,
+                        onFontScaleChange = { fontScale = it }
+                    )
+                }
             }
         }
     }
@@ -127,6 +147,8 @@ class MainActivity : ComponentActivity() {
 fun AppNavHost(
         darkTheme: Boolean,
         onDarkChange: (Boolean) -> Unit,
+        fontScale: Float,
+        onFontScaleChange: (Float) -> Unit,
         viewModel: NavViewModel = viewModel()
 ) {
 
@@ -279,7 +301,9 @@ fun AppNavHost(
         composable(Routes.SETTINGS) {
             SettingsScreen(
                 darkTheme = darkTheme,
-                onDarkChange = onDarkChange
+                onDarkChange = onDarkChange,
+                fontScale = fontScale,
+                onFontScaleChange = onFontScaleChange
             )
         }
         }
@@ -305,7 +329,9 @@ fun AppNavHost(
 @Composable
 fun SettingsScreen(
         darkTheme: Boolean,
-        onDarkChange: (Boolean) -> Unit
+        onDarkChange: (Boolean) -> Unit,
+        fontScale: Float,
+        onFontScaleChange: (Float) -> Unit
 ) {
     // The Settings tab is still mostly empty
     Column(
@@ -329,6 +355,9 @@ fun SettingsScreen(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+
+        Spacer(Modifier.height(24.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -339,6 +368,36 @@ fun SettingsScreen(
                 modifier = Modifier.weight(1f)
             )
         }
+
+        Spacer(Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Text size",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                "${(fontScale * 100).toInt()}%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Slider(
+            value = fontScale,
+            onValueChange = onFontScaleChange,
+            valueRange = 0.8f .. 1.4f,
+            steps = 5,   // 80%, 90%, 100%, 110%, 120%, 130%, 140%
+            modifier = Modifier.fillMaxWidth()
+        )
+        Text(
+            "Scales all the text in the app.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
     Column(
         modifier = Modifier
