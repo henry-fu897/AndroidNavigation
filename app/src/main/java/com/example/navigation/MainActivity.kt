@@ -53,6 +53,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -89,7 +90,11 @@ class MainActivity : ComponentActivity() {
         // enableEdgeToEdge() // defnd on ComponentActivity; == this.enableEdgeToEdge()
         setContent {
             val systemDark = isSystemInDarkTheme()
-            var darkTheme by rememberSaveable { mutableStateOf(systemDark) }
+            var darkThemeOverride by remember { mutableStateOf<Boolean?>(null) }
+            LaunchedEffect(systemDark) {
+                darkThemeOverride = null
+            }
+            val darkTheme = darkThemeOverride ?: systemDark
 
             DisposableEffect(darkTheme) {
                 this@MainActivity.enableEdgeToEdge( // use this ref of MainActivity
@@ -106,7 +111,7 @@ class MainActivity : ComponentActivity() {
             }
 
             NavigationTheme(darkTheme = darkTheme) {
-                AppNavHost(darkTheme = darkTheme, onDarkChange = { darkTheme = it })
+                AppNavHost(darkTheme = darkTheme, onDarkChange = { darkThemeOverride = it })
             }
         }
     }
