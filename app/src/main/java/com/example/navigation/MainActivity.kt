@@ -45,6 +45,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -157,6 +158,7 @@ fun AppNavHost(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column {
@@ -264,13 +266,21 @@ fun AppNavHost(
 fun QuestionLayout(content: @Composable ColumnScope.() -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val inset = maxWidth * 0.1f // 10%
-        Column(
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            shape = MaterialTheme.shapes.extraLarge,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = inset, end = inset),
-            verticalArrangement = Arrangement.Center,
-            content = content
-        )
+                .padding(horizontal = inset / 2, vertical = 12.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = inset / 2, end = inset / 2),
+                verticalArrangement = Arrangement.Center,
+                content = content
+            )
+        }
     }
 }
 @Composable
@@ -350,7 +360,7 @@ fun AnswerCard(
     val colors = MaterialTheme.colorScheme
 
     val containerColor by animateColorAsState(
-        if (selected) colors.primaryContainer else colors.surface,
+        if (selected) colors.primaryContainer else colors.surfaceContainerHigh,
         label = "container"
     )
     val contentColor by animateColorAsState(
@@ -439,45 +449,53 @@ fun Q3Screen(text: String,
 @Composable
 fun Results(viewModel: NavViewModel,
             onRestart: () -> Unit) {
-    Column(
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = MaterialTheme.shapes.extraLarge,
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(16.dp)
     ) {
-        Text("Results", style = MaterialTheme.typography.headlineMedium)
-        Text(
-            "You scored ${viewModel.score} / 3",
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(Modifier.height(8.dp))
-
-        ResultRow(
-            title = "1. Capital of France",
-            correct = viewModel.correct.get(0),
-            yourAnswer = viewModel.q1Options.get(viewModel.q1Answer?:0),
-            correctAnswer = viewModel.q1CorrectAnswer,
-        )
-        ResultRow(
-            title = "2. Mammals",
-            correct = viewModel.correct.get(1),
-            yourAnswer = viewModel.q2Options.slice(viewModel.q2Answers).joinToString(),
-            correctAnswer = viewModel.q2CorrectAnswers
-        )
-        ResultRow(
-            title = "3. Capital of Japan",
-            correct = viewModel.correct.get(2),
-            yourAnswer = viewModel.q3Answer,
-            correctAnswer = viewModel.q3CorrectText
-        )
-
-        Spacer(Modifier.weight(1f))
-        FilledTonalButton(
-            onClick = onRestart,
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Restart")
+            Text("Results", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                "You scored ${viewModel.score} / 3",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(Modifier.height(8.dp))
+
+            ResultRow(
+                title = "1. Capital of France",
+                correct = viewModel.correct.get(0),
+                yourAnswer = viewModel.q1Options.get(viewModel.q1Answer?:0),
+                correctAnswer = viewModel.q1CorrectAnswer,
+            )
+            ResultRow(
+                title = "2. Mammals",
+                correct = viewModel.correct.get(1),
+                yourAnswer = viewModel.q2Options.slice(viewModel.q2Answers).joinToString(),
+                correctAnswer = viewModel.q2CorrectAnswers
+            )
+            ResultRow(
+                title = "3. Capital of Japan",
+                correct = viewModel.correct.get(2),
+                yourAnswer = viewModel.q3Answer,
+                correctAnswer = viewModel.q3CorrectText
+            )
+
+            Spacer(Modifier.weight(1f))
+            FilledTonalButton(
+                onClick = onRestart,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Restart")
+            }
         }
     }
 }
