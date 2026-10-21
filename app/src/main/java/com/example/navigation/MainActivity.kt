@@ -28,9 +28,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -41,6 +43,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -82,6 +86,7 @@ object Routes {
     const val Q2 = "question2"
     const val Q3 = "question3"
     const val RESULTS = "results"
+    const val SETTINGS = "settings"
 
 }
 class MainActivity : ComponentActivity() {
@@ -135,6 +140,7 @@ fun AppNavHost(
         Routes.Q2 -> "Question 2 of 3"
         Routes.Q3 -> "Question 3 of 3"
         Routes.RESULTS -> "Results"
+        Routes.SETTINGS -> "Settings"
         else -> ""
     }
 
@@ -151,7 +157,7 @@ fun AppNavHost(
     }
 
     val isQuestion = route == Routes.Q1 || route == Routes.Q2 || route == Routes.Q3
-    val canGoBack = route == Routes.Q2 || route == Routes.Q3
+    val canGoBack = route == Routes.Q2 || route == Routes.Q3 || route == Routes.SETTINGS
 
     val progress = when (route) {
         Routes.Q1 -> 1f / 3
@@ -195,15 +201,43 @@ fun AppNavHost(
                         actionIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 )
-                LinearProgressIndicator(
-                    progress = { animatedProgress }, // loading...
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary,
-                    //primarytrackColor = MaterialTheme.colorScheme.error,
-                    trackColor = MaterialTheme.colorScheme.primaryContainer,
-                    strokeCap = StrokeCap.Butt, //
-                    gapSize = 0.dp,
-                    drawStopIndicator = {}
+                if (route != Routes.SETTINGS) {
+                    LinearProgressIndicator(
+                        progress = { animatedProgress }, // loading...
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary,
+                        //primarytrackColor = MaterialTheme.colorScheme.error,
+                        trackColor = MaterialTheme.colorScheme.primaryContainer,
+                        strokeCap = StrokeCap.Butt, //
+                        gapSize = 0.dp,
+                        drawStopIndicator = {}
+                    )
+                }
+            }
+        },
+        bottomBar = {
+            // Bottom navigation: one tab for the quiz (questions and results),
+            // one tab for the settings, which is still empty.
+            NavigationBar {
+                val onSettings = route == Routes.SETTINGS
+                NavigationBarItem(
+                    selected = !onSettings,
+                    onClick = {
+                        // Leave the settings tab and go back to the quiz flow.
+                        if (onSettings) navController.popBackStack()
+                    },
+                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
+                    label = { Text("Quiz") }
+                )
+                NavigationBarItem(
+                    selected = onSettings,
+                    onClick = {
+                        if (!onSettings) {
+                            navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
+                        }
+                    },
+                    icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                    label = { Text("Settings") }
                 )
             }
         }
@@ -213,40 +247,43 @@ fun AppNavHost(
             navController = navController,
             startDestination = Routes.Q1
         ) {
-        composable(Routes.Q1) {
-            Q1Screen(
-                options = viewModel.q1Options,
-                selected = viewModel.q1Answer,
-                onSelect = viewModel::onSelect,
-                onNext = { navController.navigate(Routes.Q2) }
-            )
-        }
-        composable(Routes.Q2) {
-            Q2Screen(
-                options = viewModel.q2Options,
-                selected = viewModel.q2Answers,
-                onToggle = viewModel::onToggle,
-                onNext = {navController.navigate(Routes.Q3)}
-            )
-        }
-        composable(Routes.Q3) {
-            Q3Screen(
-                text = viewModel.q3Answer,
-                onTextChange = viewModel::onChange,
-                onFinish = {
-                    // Remove the quiz screens so Back doesn't return to them.
-                    navController.navigate(Routes.RESULTS) {
-                        popUpTo(Routes.Q1) { inclusive = true }
+            composable(Routes.Q1) {
+                Q1Screen(
+                    options = viewModel.q1Options,
+                    selected = viewModel.q1Answer,
+                    onSelect = viewModel::onSelect,
+                    onNext = { navController.navigate(Routes.Q2) }
+                )
+            }
+            composable(Routes.Q2) {
+                Q2Screen(
+                    options = viewModel.q2Options,
+                    selected = viewModel.q2Answers,
+                    onToggle = viewModel::onToggle,
+                    onNext = {navController.navigate(Routes.Q3)}
+                )
+            }
+            composable(Routes.Q3) {
+                Q3Screen(
+                    text = viewModel.q3Answer,
+                    onTextChange = viewModel::onChange,
+                    onFinish = {
+                        // Remove the quiz screens so Back doesn't return to them.
+                        navController.navigate(Routes.RESULTS) {
+                            popUpTo(Routes.Q1) { inclusive = true }
+                        }
                     }
-                }
-            )
-        }
-        composable(Routes.RESULTS) {
-            Results(
-                viewModel = viewModel,
-                onRestart = { restartQuiz(Routes.RESULTS) }
-            )
-        }
+                )
+            }
+            composable(Routes.RESULTS) {
+                Results(
+                    viewModel = viewModel,
+                    onRestart = { restartQuiz(Routes.RESULTS) }
+                )
+            }
+            composable(Routes.SETTINGS) {
+                SettingsScreen()
+            }
         }
     }
     if (showRestartDialog) {
@@ -265,6 +302,12 @@ fun AppNavHost(
             }
         )
     }
+}
+
+@Composable
+fun SettingsScreen() {
+    // The Settings tab is empty for now: its content comes later.
+    Box(Modifier.fillMaxSize())
 }
 
 @Composable
