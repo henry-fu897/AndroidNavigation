@@ -83,6 +83,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.navigation.ui.theme.NavigationTheme
 import com.example.navigation.ui.theme.semanticColors
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 
 object Routes {
@@ -189,6 +190,22 @@ fun AppNavHost(
     }
     val animatedProgress by animateFloatAsState(progress, label = "quiz progress")
 
+    val questionSteps = listOf(Routes.Q1, Routes.Q2, Routes.Q3)
+    val currentStep = questionSteps.indexOf(route)
+    var sliderValue by remember { mutableStateOf(0f) }
+    LaunchedEffect(currentStep) {
+        if (currentStep >= 0) sliderValue = currentStep.toFloat()
+    }
+
+    fun goToQuestion(step: Int) {
+        val target = questionSteps.getOrNull(step) ?: return
+        if (target == route) return
+        navController.navigate(target) {
+            popUpTo(Routes.Q1) { inclusive = false }   // keep question 1 at the bottom
+            launchSingleTop = true
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surfaceDim,
@@ -233,29 +250,44 @@ fun AppNavHost(
             }
         },
         bottomBar = {
-            // Bottom navigation: one tab for the quiz (questions and results),
-            // one tab for the settings, which is still empty.
-            NavigationBar {
-                val onSettings = route == Routes.SETTINGS
-                NavigationBarItem(
-                    selected = !onSettings,
-                    onClick = {
-                        // Leave the settings tab and go back to the quiz flow.
-                        if (onSettings) navController.popBackStack()
-                    },
-                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
-                    label = { Text("Quiz") }
-                )
-                NavigationBarItem(
-                    selected = onSettings,
-                    onClick = {
-                        if (!onSettings) {
-                            navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
-                        }
-                    },
-                    icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-                    label = { Text("Settings") }
-                )
+            // top of bottom bar for question slider
+            Column {
+                if (isQuestion) {
+                    Slider(
+                        value = sliderValue,
+                        onValueChange = { sliderValue = it },
+                        onValueChangeFinished = { goToQuestion(sliderValue.roundToInt()) },
+                        valueRange = 0f..2f,
+                        steps = 1,   // question 1, question 2, question 3
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+                // Bottom navigation: one tab for the quiz (questions and results),
+                // one tab for the settings, which is still empty.
+                NavigationBar {
+                    val onSettings = route == Routes.SETTINGS
+                    NavigationBarItem(
+                        selected = !onSettings,
+                        onClick = {
+                            // Leave the settings tab and go back to the quiz flow.
+                            if (onSettings) navController.popBackStack()
+                        },
+                        icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
+                        label = { Text("Quiz") }
+                    )
+                    NavigationBarItem(
+                        selected = onSettings,
+                        onClick = {
+                            if (!onSettings) {
+                                navController.navigate(Routes.SETTINGS) { launchSingleTop = true }
+                            }
+                        },
+                        icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+                        label = { Text("Settings") }
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -390,8 +422,9 @@ fun SettingsScreen(
             value = fontScale,
             onValueChange = onFontScaleChange,
             valueRange = 0.8f .. 1.4f,
-            steps = 5,   // 80%, 90%, 100%, 110%, 120%, 130%, 140%
-            modifier = Modifier.fillMaxWidth()
+            // steps = 5,   // 80%, 90%, 100%, 110%, 120%, 130%, 140%
+            modifier = Modifier.fillMaxWidth(),
+
         )
         Text(
             "Scales all the text in the app.",
