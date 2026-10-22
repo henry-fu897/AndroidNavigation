@@ -1,5 +1,6 @@
 package com.example.navigation
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -109,6 +110,8 @@ class MainActivity : ComponentActivity() {
             var fontScale by rememberSaveable { mutableStateOf(1f) }
             val baseDensity = LocalDensity.current
 
+            var dynamicColor by rememberSaveable { mutableStateOf(true) }
+
             DisposableEffect(darkTheme) {
                 this@MainActivity.enableEdgeToEdge( // use this ref of MainActivity
                     statusBarStyle = SystemBarStyle.auto(
@@ -130,12 +133,14 @@ class MainActivity : ComponentActivity() {
                     fontScale = baseDensity.fontScale * fontScale
                 )
             ) {
-                NavigationTheme(darkTheme = darkTheme) {
+                NavigationTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
                     AppNavHost(
                         darkTheme = darkTheme,
                         onDarkChange = { darkThemeOverride = it },
                         fontScale = fontScale,
-                        onFontScaleChange = { fontScale = it }
+                        onFontScaleChange = { fontScale = it },
+                        dynamicColor = dynamicColor,
+                        onDynamicColorChange = { dynamicColor = it }
                     )
                 }
             }
@@ -150,6 +155,8 @@ fun AppNavHost(
         onDarkChange: (Boolean) -> Unit,
         fontScale: Float,
         onFontScaleChange: (Float) -> Unit,
+        dynamicColor: Boolean,
+        onDynamicColorChange: (Boolean) -> Unit,
         viewModel: NavViewModel = viewModel()
 ) {
 
@@ -335,7 +342,9 @@ fun AppNavHost(
                 darkTheme = darkTheme,
                 onDarkChange = onDarkChange,
                 fontScale = fontScale,
-                onFontScaleChange = onFontScaleChange
+                onFontScaleChange = onFontScaleChange,
+                dynamicColor = dynamicColor,
+                onDynamicColorChange = onDynamicColorChange
             )
         }
         }
@@ -363,7 +372,9 @@ fun SettingsScreen(
         darkTheme: Boolean,
         onDarkChange: (Boolean) -> Unit,
         fontScale: Float,
-        onFontScaleChange: (Float) -> Unit
+        onFontScaleChange: (Float) -> Unit,
+        dynamicColor: Boolean,
+        onDynamicColorChange: (Boolean) -> Unit
 ) {
     // The Settings tab is still mostly empty
     Column(
@@ -384,6 +395,35 @@ fun SettingsScreen(
         }
         Text(
             "Follows your system light/dark setting.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        // Dynamic color (Material You) only exists on Android 12 and newer.
+        val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Dynamic color",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Switch(
+                checked = dynamicColor && dynamicAvailable,
+                onCheckedChange = onDynamicColorChange,
+                enabled = dynamicAvailable
+            )
+        }
+        Text(
+            if (dynamicAvailable) {
+                "Uses the colors from your wallpaper."
+            } else {
+                "Requires Android 12 or newer."
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
