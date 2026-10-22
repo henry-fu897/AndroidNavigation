@@ -29,6 +29,20 @@ val DarkSemanticColors = SemanticColors(
     onCorrectContainer = Color(0xFFC8E6C9)
 )
 
+val HighContrastLightSemanticColors = SemanticColors(
+    correct = Color(0xFF0B4A12),
+    onCorrect = Color(0xFFFFFFFF),
+    correctContainer = Color(0xFF9CF2A0),
+    onCorrectContainer = Color(0xFF002105)
+)
+
+val HighContrastDarkSemanticColors = SemanticColors(
+    correct = Color(0xFF9CF2A0),
+    onCorrect = Color(0xFF002105),
+    correctContainer = Color(0xFF0B4A12),
+    onCorrectContainer = Color(0xFF9CF2A0)
+)
+
 val LocalSemanticColors = staticCompositionLocalOf<SemanticColors> {
     error("No SemanticColors provided. Wrap your UI in NavigationTheme.")
 }

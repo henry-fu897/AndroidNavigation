@@ -23,10 +23,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
@@ -113,6 +115,8 @@ class MainActivity : ComponentActivity() {
 
             var dynamicColor by rememberSaveable { mutableStateOf(true) }
 
+            var highContrast by rememberSaveable { mutableStateOf(false) }
+
             DisposableEffect(darkTheme) {
                 this@MainActivity.enableEdgeToEdge( // use this ref of MainActivity
                     statusBarStyle = SystemBarStyle.auto(
@@ -134,14 +138,20 @@ class MainActivity : ComponentActivity() {
                     fontScale = baseDensity.fontScale * fontScale
                 )
             ) {
-                NavigationTheme(darkTheme = darkTheme, dynamicColor = dynamicColor) {
+                NavigationTheme(
+                    darkTheme = darkTheme,
+                    dynamicColor = dynamicColor,
+                    highContrast = highContrast
+                ) {
                     AppNavHost(
                         darkTheme = darkTheme,
                         onDarkChange = { darkThemeOverride = it },
                         fontScale = fontScale,
                         onFontScaleChange = { fontScale = it },
                         dynamicColor = dynamicColor,
-                        onDynamicColorChange = { dynamicColor = it }
+                        onDynamicColorChange = { dynamicColor = it },
+                        highContrast = highContrast,
+                        onHighContrastChange = { highContrast = it }
                     )
                 }
             }
@@ -158,6 +168,8 @@ fun AppNavHost(
         onFontScaleChange: (Float) -> Unit,
         dynamicColor: Boolean,
         onDynamicColorChange: (Boolean) -> Unit,
+        highContrast: Boolean,
+        onHighContrastChange: (Boolean) -> Unit,
         viewModel: NavViewModel = viewModel()
 ) {
 
@@ -345,7 +357,9 @@ fun AppNavHost(
                 fontScale = fontScale,
                 onFontScaleChange = onFontScaleChange,
                 dynamicColor = dynamicColor,
-                onDynamicColorChange = onDynamicColorChange
+                onDynamicColorChange = onDynamicColorChange,
+                highContrast = highContrast,
+                onHighContrastChange = onHighContrastChange
             )
         }
         }
@@ -375,7 +389,9 @@ fun SettingsScreen(
         fontScale: Float,
         onFontScaleChange: (Float) -> Unit,
         dynamicColor: Boolean,
-        onDynamicColorChange: (Boolean) -> Unit
+        onDynamicColorChange: (Boolean) -> Unit,
+        highContrast: Boolean,
+        onHighContrastChange: (Boolean) -> Unit
 ) {
     var pendingScale by remember { mutableStateOf(fontScale) }
     LaunchedEffect(fontScale) { pendingScale = fontScale }
@@ -384,6 +400,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
         Row(
@@ -417,17 +434,36 @@ fun SettingsScreen(
                 modifier = Modifier.weight(1f)
             )
             Switch(
-                checked = dynamicColor && dynamicAvailable,
+                checked = dynamicColor && dynamicAvailable && !highContrast,
                 onCheckedChange = onDynamicColorChange,
-                enabled = dynamicAvailable
+                enabled = dynamicAvailable && !highContrast
             )
         }
         Text(
-            if (dynamicAvailable) {
-                "Uses the colors from your wallpaper."
-            } else {
-                "Requires Android 12 or newer."
+            when {
+                !dynamicAvailable -> "Requires Android 12 or newer."
+                highContrast -> "Turn off high contrast to use wallpaper colors."
+                else -> "Uses the colors from your wallpaper."
             },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "High contrast",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Switch(checked = highContrast, onCheckedChange = onHighContrastChange)
+        }
+        Text(
+            "Black text on white or white text on black for easier reading.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

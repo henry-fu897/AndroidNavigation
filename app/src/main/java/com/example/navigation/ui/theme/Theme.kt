@@ -56,13 +56,83 @@ private val DarkColorScheme = darkColorScheme(
     outline = OutlineDark
 )
 
+private val LightHighContrastColorScheme = lightColorScheme(
+    primary = HighContrastLightPrimary,
+    onPrimary = HighContrastLightOnPrimary,
+    primaryContainer = HighContrastLightPrimaryContainer,
+    onPrimaryContainer = HighContrastLightOnPrimaryContainer,
+    secondary = HighContrastLightSecondary,
+    onSecondary = HighContrastLightOnSecondary,
+    secondaryContainer = HighContrastLightSecondaryContainer,
+    onSecondaryContainer = HighContrastLightOnSecondaryContainer,
+    tertiary = HighContrastLightTertiary,
+    onTertiary = HighContrastLightOnTertiary,
+    tertiaryContainer = HighContrastLightTertiaryContainer,
+    onTertiaryContainer = HighContrastLightOnTertiaryContainer,
+    background = HighContrastLightBackground,
+    onBackground = HighContrastLightOnBackground,
+    surface = HighContrastLightSurface,
+    onSurface = HighContrastLightOnSurface,
+    surfaceVariant = HighContrastLightSurfaceVariant,
+    onSurfaceVariant = HighContrastLightOnSurfaceVariant,
+    outline = HighContrastLightOutline,
+    error = HighContrastLightError,
+    onError = HighContrastLightOnError,
+    errorContainer = HighContrastLightErrorContainer,
+    onErrorContainer = HighContrastLightOnErrorContainer,
+    surfaceDim = HighContrastLightSurfaceDim,
+    surfaceBright = HighContrastLightSurfaceBright,
+    surfaceContainerLowest = HighContrastLightSurfaceContainerLowest,
+    surfaceContainerLow = HighContrastLightSurfaceContainerLow,
+    surfaceContainer = HighContrastLightSurfaceContainer,
+    surfaceContainerHigh = HighContrastLightSurfaceContainerHigh,
+    surfaceContainerHighest = HighContrastLightSurfaceContainerHighest
+)
+
+private val DarkHighContrastColorScheme = darkColorScheme(
+    primary = HighContrastDarkPrimary,
+    onPrimary = HighContrastDarkOnPrimary,
+    primaryContainer = HighContrastDarkPrimaryContainer,
+    onPrimaryContainer = HighContrastDarkOnPrimaryContainer,
+    secondary = HighContrastDarkSecondary,
+    onSecondary = HighContrastDarkOnSecondary,
+    secondaryContainer = HighContrastDarkSecondaryContainer,
+    onSecondaryContainer = HighContrastDarkOnSecondaryContainer,
+    tertiary = HighContrastDarkTertiary,
+    onTertiary = HighContrastDarkOnTertiary,
+    tertiaryContainer = HighContrastDarkTertiaryContainer,
+    onTertiaryContainer = HighContrastDarkOnTertiaryContainer,
+    background = HighContrastDarkBackground,
+    onBackground = HighContrastDarkOnBackground,
+    surface = HighContrastDarkSurface,
+    onSurface = HighContrastDarkOnSurface,
+    surfaceVariant = HighContrastDarkSurfaceVariant,
+    onSurfaceVariant = HighContrastDarkOnSurfaceVariant,
+    outline = HighContrastDarkOutline,
+    error = HighContrastDarkError,
+    onError = HighContrastDarkOnError,
+    errorContainer = HighContrastDarkErrorContainer,
+    onErrorContainer = HighContrastDarkOnErrorContainer,
+    surfaceDim = HighContrastDarkSurfaceDim,
+    surfaceBright = HighContrastDarkSurfaceBright,
+    surfaceContainerLowest = HighContrastDarkSurfaceContainerLowest,
+    surfaceContainerLow = HighContrastDarkSurfaceContainerLow,
+    surfaceContainer = HighContrastDarkSurfaceContainer,
+    surfaceContainerHigh = HighContrastDarkSurfaceContainerHigh,
+    surfaceContainerHighest = HighContrastDarkSurfaceContainerHighest
+)
+
 @Composable
 fun NavigationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
+    highContrast: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
+        highContrast && darkTheme -> DarkHighContrastColorScheme
+        highContrast -> LightHighContrastColorScheme
+
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -72,7 +142,12 @@ fun NavigationTheme(
         else -> LightColorScheme
     }
 
-    val semanticColors = if (darkTheme) DarkSemanticColors else LightSemanticColors
+    val semanticColors = when {
+        highContrast && darkTheme -> HighContrastDarkSemanticColors
+        highContrast -> HighContrastLightSemanticColors
+        darkTheme -> DarkSemanticColors
+        else -> LightSemanticColors
+    }
 
     CompositionLocalProvider(LocalSemanticColors provides semanticColors) {
         MaterialTheme(
