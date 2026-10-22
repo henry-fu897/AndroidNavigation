@@ -376,6 +376,12 @@ fun SettingsScreen(
         dynamicColor: Boolean,
         onDynamicColorChange: (Boolean) -> Unit
 ) {
+    // The slider only previews the new size while the user drags it. The real
+    // text size changes when the drag ends, so the text above the slider
+    // cannot move while the user's finger is still on it.
+    var pendingScale by remember { mutableStateOf(fontScale) }
+    LaunchedEffect(fontScale) { pendingScale = fontScale }
+
     // The Settings tab is still mostly empty
     Column(
         modifier = Modifier
@@ -453,14 +459,15 @@ fun SettingsScreen(
                 modifier = Modifier.weight(1f)
             )
             Text(
-                "${(fontScale * 100).toInt()}%",
+                "${(pendingScale * 100).toInt()}%",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         Slider(
-            value = fontScale,
-            onValueChange = onFontScaleChange,
+            value = pendingScale,
+            onValueChange = { pendingScale = it },
+            onValueChangeFinished = { onFontScaleChange(pendingScale) },
             valueRange = 0.8f .. 1.4f,
             // steps = 5,   // 80%, 90%, 100%, 110%, 120%, 130%, 140%
             modifier = Modifier.fillMaxWidth(),
