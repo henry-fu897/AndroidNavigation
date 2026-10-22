@@ -44,6 +44,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -57,6 +58,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -98,7 +100,6 @@ object Routes {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // enableEdgeToEdge() // defnd on ComponentActivity; == this.enableEdgeToEdge()
         setContent {
             val systemDark = isSystemInDarkTheme()
             var darkThemeOverride by remember { mutableStateOf<Boolean?>(null) }
@@ -175,7 +176,7 @@ fun AppNavHost(
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope() // !!
+    val scope = rememberCoroutineScope()
     var showRestartDialog by remember { mutableStateOf(false) }
 
     fun restartQuiz(popUpFrom: String) {
@@ -183,7 +184,7 @@ fun AppNavHost(
         navController.navigate(Routes.Q1) {
             popUpTo(popUpFrom) { inclusive = true }
         }
-        scope.launch { snackbarHostState.showSnackbar("Quiz restarted") } // !!
+        scope.launch { snackbarHostState.showSnackbar("Quiz restarted") }
     }
 
     val isQuestion = route == Routes.Q1 || route == Routes.Q2 || route == Routes.Q3
@@ -376,9 +377,6 @@ fun SettingsScreen(
         dynamicColor: Boolean,
         onDynamicColorChange: (Boolean) -> Unit
 ) {
-    // The slider only previews the new size while the user drags it. The real
-    // text size changes when the drag ends, so the text above the slider
-    // cannot move while the user's finger is still on it.
     var pendingScale by remember { mutableStateOf(fontScale) }
     LaunchedEffect(fontScale) { pendingScale = fontScale }
 
@@ -400,7 +398,7 @@ fun SettingsScreen(
             Switch(checked = darkTheme, onCheckedChange = onDarkChange)
         }
         Text(
-            "Follows your system light/dark setting.",
+            "Changes app light/dark setting.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -434,18 +432,18 @@ fun SettingsScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Setting Test Spacing",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f)
-            )
-        }
+//        Spacer(Modifier.height(24.dp))
+//
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            Text(
+//                "Setting Test Spacing",
+//                style = MaterialTheme.typography.titleLarge,
+//                modifier = Modifier.weight(1f)
+//            )
+//        }
 
         Spacer(Modifier.height(24.dp))
 
@@ -672,9 +670,13 @@ fun Q3Screen(text: String,
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Results(viewModel: NavViewModel,
             onRestart: () -> Unit) {
+    var showBreakdown by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shape = MaterialTheme.shapes.extraLarge,
@@ -693,34 +695,61 @@ fun Results(viewModel: NavViewModel,
                 "You scored ${viewModel.score} / 3",
                 style = MaterialTheme.typography.titleLarge
             )
-            Spacer(Modifier.height(8.dp))
-
-            ResultRow(
-                title = "1. Capital of France",
-                correct = viewModel.correct.get(0),
-                yourAnswer = viewModel.q1Options.get(viewModel.q1Answer?:0),
-                correctAnswer = viewModel.q1CorrectAnswer,
-            )
-            ResultRow(
-                title = "2. Mammals",
-                correct = viewModel.correct.get(1),
-                yourAnswer = viewModel.q2Options.slice(viewModel.q2Answers).joinToString(),
-                correctAnswer = viewModel.q2CorrectAnswers
-            )
-            ResultRow(
-                title = "3. Capital of Japan",
-                correct = viewModel.correct.get(2),
-                yourAnswer = viewModel.q3Answer,
-                correctAnswer = viewModel.q3CorrectText
+            Text(
+                "Open the breakdown to see how each question went.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(Modifier.weight(1f))
+            Button(
+                onClick = { showBreakdown = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Show breakdown")
+            }
             FilledTonalButton(
                 onClick = onRestart,
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Restart")
+            }
+        }
+    }
+
+    if (showBreakdown) {
+        ModalBottomSheet(
+            onDismissRequest = { showBreakdown = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("Your answers", style = MaterialTheme.typography.titleLarge)
+
+                ResultRow(
+                    title = "1. Capital of France",
+                    correct = viewModel.correct.get(0),
+                    yourAnswer = viewModel.q1Options.get(viewModel.q1Answer?:0),
+                    correctAnswer = viewModel.q1CorrectAnswer,
+                )
+                ResultRow(
+                    title = "2. Mammals",
+                    correct = viewModel.correct.get(1),
+                    yourAnswer = viewModel.q2Options.slice(viewModel.q2Answers).joinToString(),
+                    correctAnswer = viewModel.q2CorrectAnswers
+                )
+                ResultRow(
+                    title = "3. Capital of Japan",
+                    correct = viewModel.correct.get(2),
+                    yourAnswer = viewModel.q3Answer,
+                    correctAnswer = viewModel.q3CorrectText
+                )
             }
         }
     }
